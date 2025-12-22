@@ -30,6 +30,10 @@ public class TwsWrapper implements EWrapper {
     private final Map<Integer, String> historicalDataStartDates = new java.util.concurrent.ConcurrentHashMap<>();
     private final Map<Integer, String> historicalDataEndDates = new java.util.concurrent.ConcurrentHashMap<>();
 
+    // Scanner data storage
+    private final Map<Integer, List<ContractDetails>> scannerDataMap = new java.util.concurrent.ConcurrentHashMap<>();
+    private final Map<Integer, CountDownLatch> scannerLatches = new java.util.concurrent.ConcurrentHashMap<>();
+
     public void setConnectionLatch(CountDownLatch latch) {
         this.connectionLatch = latch;
     }
@@ -72,6 +76,25 @@ public class TwsWrapper implements EWrapper {
         historicalDataLatches.remove(reqId);
         historicalDataStartDates.remove(reqId);
         historicalDataEndDates.remove(reqId);
+    }
+
+    // Scanner data methods
+    public void prepareScannerRequest(int reqId) {
+        scannerDataMap.put(reqId, new ArrayList<>());
+        scannerLatches.put(reqId, new CountDownLatch(1));
+    }
+
+    public List<ContractDetails> getScannerData(int reqId) {
+        return scannerDataMap.get(reqId);
+    }
+
+    public CountDownLatch getScannerLatch(int reqId) {
+        return scannerLatches.get(reqId);
+    }
+
+    public void clearScannerData(int reqId) {
+        scannerDataMap.remove(reqId);
+        scannerLatches.remove(reqId);
     }
 
     public static class ErrorInfo {
@@ -228,14 +251,30 @@ public class TwsWrapper implements EWrapper {
     }
 
     @Override
-    public void scannerParameters(String xml) {}
+    public void scannerParameters(String xml) {
+        log.debug("Scanner parameters received");
+    }
 
     @Override
     public void scannerData(int reqId, int rank, ContractDetails contractDetails, String distance,
-                           String benchmark, String projection, String legsStr) {}
+                           String benchmark, String projection, String legsStr) {
+        log.debug("Scanner data received for reqId {}: rank={}, symbol={}", 
+                 reqId, rank, contractDetails != null && contractDetails.contract() != null ? 
+                 contractDetails.contract().symbol() : "null");
+        List<ContractDetails> data = scannerDataMap.get(reqId);
+        if (data != null && contractDetails != null) {
+            data.add(contractDetails);
+        }
+    }
 
     @Override
-    public void scannerDataEnd(int reqId) {}
+    public void scannerDataEnd(int reqId) {
+        log.info("Scanner data complete for reqId {}", reqId);
+        CountDownLatch latch = scannerLatches.get(reqId);
+        if (latch != null) {
+            latch.countDown();
+        }
+    }
 
     @Override
     public void realtimeBar(int reqId, long time, double open, double high, double low, double close,
