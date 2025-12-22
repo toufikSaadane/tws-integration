@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: tws-integration
+
+# TWS API Configuration
+tws:
+  host: localhost
+  port: 7497
+  client-id: 1
+  timeout: 5000
