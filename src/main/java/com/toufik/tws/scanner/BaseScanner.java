@@ -15,7 +15,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public abstract class BaseScanner {
 
-    private static final AtomicInteger REQUEST_ID_COUNTER = new AtomicInteger(10000);
+    private static final int SCANNER_REQUEST_ID_START = 10000;
+    private static final AtomicInteger REQUEST_ID_COUNTER = new AtomicInteger(SCANNER_REQUEST_ID_START);
     private static final int TIMEOUT_SECONDS = 30;
 
     protected abstract String getScanCode();

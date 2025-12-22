@@ -28,38 +28,25 @@ public class ScannerService {
         }
 
         log.info("Running all scanners to find top stocks...");
-        List<String> allResults = new ArrayList<>();
+        
+        // Collect all scanners
+        List<BaseScanner> scanners = Arrays.asList(
+            topPercGainScanner,
+            topPercLoseScanner,
+            mostActiveScanner,
+            hotByVolumeScanner,
+            hotByPriceScanner,
+            topTradeCountScanner
+        );
 
         // Run all scanners and collect results
-        allResults.addAll(topPercGainScanner.scan(
-            twsConnectionService.getClientSocket(), 
-            twsConnectionService.getWrapper()
-        ));
-        
-        allResults.addAll(topPercLoseScanner.scan(
-            twsConnectionService.getClientSocket(), 
-            twsConnectionService.getWrapper()
-        ));
-        
-        allResults.addAll(mostActiveScanner.scan(
-            twsConnectionService.getClientSocket(), 
-            twsConnectionService.getWrapper()
-        ));
-        
-        allResults.addAll(hotByVolumeScanner.scan(
-            twsConnectionService.getClientSocket(), 
-            twsConnectionService.getWrapper()
-        ));
-        
-        allResults.addAll(hotByPriceScanner.scan(
-            twsConnectionService.getClientSocket(), 
-            twsConnectionService.getWrapper()
-        ));
-        
-        allResults.addAll(topTradeCountScanner.scan(
-            twsConnectionService.getClientSocket(), 
-            twsConnectionService.getWrapper()
-        ));
+        List<String> allResults = new ArrayList<>();
+        for (BaseScanner scanner : scanners) {
+            allResults.addAll(scanner.scan(
+                twsConnectionService.getClientSocket(),
+                twsConnectionService.getWrapper()
+            ));
+        }
 
         log.info("Total results collected: {}", allResults.size());
 
