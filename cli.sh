@@ -32,6 +32,14 @@ case $COMMAND in
       -q
     ;;
 
+  scanner)
+    echo "Running Market Scanner CLI..."
+    ./mvnw spring-boot:run \
+      -Dspring-boot.run.arguments="--tws.cli.scanner.enabled=true" \
+      -Dspring-boot.run.profiles=cli \
+      -q
+    ;;
+
   *)
     echo "TWS CLI Tool"
     echo ""
@@ -40,10 +48,12 @@ case $COMMAND in
     echo "Commands:"
     echo "  historical    Fetch historical market data (interactive)"
     echo "  connection    Test TWS connection"
+    echo "  scanner       Run market scanners to find top stocks"
     echo ""
     echo "Examples:"
     echo "  ./cli.sh historical"
     echo "  ./cli.sh connection"
+    echo "  ./cli.sh scanner"
     echo ""
     exit 1
     ;;
